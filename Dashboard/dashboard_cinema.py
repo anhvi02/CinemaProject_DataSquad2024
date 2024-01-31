@@ -16,13 +16,15 @@ color_2 = '#ffc2d1'
 
 ##### DATABASE CONNECTING >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 # Connection details
-server = st.secrets['server']
-database = st.secrets['database']
-username = st.secrets['username']
-password = st.secrets['password']
-driver = st.secrets['driver']
+server = st.secrets["server"]
+database = st.secrets["database"]
+username = st.secrets["username"]
+password = st.secrets["password"]
+driver = st.secrets["driver"]
+
 # Connection string
 conn_str = f'DRIVER={driver};SERVER={server};DATABASE={database};UID={username};PWD={password}'
+st.write(conn_str)
 # Connect to the database
 conn = pyodbc.connect(conn_str)
 
