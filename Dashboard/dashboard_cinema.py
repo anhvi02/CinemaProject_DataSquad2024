@@ -20,7 +20,7 @@ server = st.secrets["server"]
 database = st.secrets["database"]
 username = st.secrets["username"]
 password = st.secrets["password"]
-driver = "{ODBC Driver 18 for SQL Server}" 
+driver = "{ODBC Driver 17 for SQL Server}" 
 
 # Connection string
 conn_str = f'DRIVER={driver};SERVER={server};DATABASE={database};UID={username};PWD={password}'
