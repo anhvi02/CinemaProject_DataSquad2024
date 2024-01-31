@@ -11,22 +11,20 @@ import datetime
 st.set_page_config(layout = 'wide', page_title='Cinema Dashboard', page_icon='🍿')
 color_1 = '#fb6f92'
 # ffc300
-color_2 = '#ffe5ec'
+color_2 = '#ffc2d1'
 
 
 ##### DATABASE CONNECTING >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 # Connection details
-server = 'projectcinemaserver.database.windows.net'
-database = 'cinemadatabase'
-username = 'datasquad'
-password = 'Homies@2024'
-driver = '{ODBC Driver 18 for SQL Server}'  # Adjust driver based on your environment
+server = st.secrets['server']
+database = st.secrets['database']
+username = st.secrets['username']
+password = st.secrets['password']
+driver = st.secrets['driver']
 # Connection string
 conn_str = f'DRIVER={driver};SERVER={server};DATABASE={database};UID={username};PWD={password}'
 # Connect to the database
 conn = pyodbc.connect(conn_str)
-
-
 
 
 
