@@ -20,11 +20,11 @@ server = st.secrets["server"]
 database = st.secrets["database"]
 username = st.secrets["username"]
 password = st.secrets["password"]
-driver = st.secrets["driver"]
+driver = "{ODBC Driver 18 for SQL Server}" 
 
 # Connection string
 conn_str = f'DRIVER={driver};SERVER={server};DATABASE={database};UID={username};PWD={password}'
-st.write(conn_str)
+# st.write(conn_str)
 # Connect to the database
 conn = pyodbc.connect(conn_str)
 
