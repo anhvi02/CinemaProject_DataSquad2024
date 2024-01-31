@@ -229,9 +229,12 @@ with customer_db:
             
             # filter sale preto
             max_customer = len(df_order_cust['customerid'].unique())
+            default_customer = 15
+            if max_customer < 15:
+                default_customer = max_customer -1
             display_customer = st.number_input(f'Biểu đồ pareto: số lượng khách hiển thị (tối đa {max_customer})', 
                                         min_value= 5, max_value= max_customer, step = 1,
-                                        value= 15)
+                                        value= default_customer)
 
             # Bar Chart: job and industry
             if filter_job_industry == 'Job':
