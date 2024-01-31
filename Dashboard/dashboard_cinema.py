@@ -9,9 +9,21 @@ import datetime
 
 ###### STREAMLIT SETTINGS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 st.set_page_config(layout = 'wide', page_title='Cinema Dashboard', page_icon='🍿')
+st.markdown("""
+    <style>
+        .reportview-container {
+            margin-top: -2em;
+        }
+        #MainMenu {visibility: hidden;}
+        .stDeployButton {display:none;}
+        footer {visibility: hidden;}
+        #stDecoration {display:none;}
+    </style>
+""", unsafe_allow_html=True)
 color_1 = '#fb6f92'
-# ffc300
 color_2 = '#ffc2d1'
+
+
 
 
 ##### DATABASE CONNECTING >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -33,7 +45,6 @@ conn = pyodbc.connect(conn_str)
 
 ###### TABS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 sale_db, customer_db, about = st.tabs(["Doanh thu", "Khách hàng", "Giới thiệu"])
-
 
 
 ##### SALES DASHBOARD>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
