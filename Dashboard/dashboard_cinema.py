@@ -10,6 +10,7 @@ import smtplib
 
 ###### STREAMLIT SETTINGS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 st.set_page_config(layout = 'wide', page_title='Cinema Dashboard', page_icon='🍿')
+ip_address = st.get_option('server.address')
 st.markdown("""
     <style>
         .reportview-container {
@@ -47,6 +48,9 @@ try:
 
 except Exception as e:
     print(e)
+    print('---------------------')
+    print('Streamlit App IP:', ip_address)
+
     reciever_emails = ['huynhthong02042002@gmail.com', 'trungthien09503@gmail.com','anhvi09042002@gmail.com']
     sender_gmail = st.secrets["sender_gmail"]
     sender_apppass = st.secrets["sender_apppass"]
