@@ -7,6 +7,7 @@ import pyodbc
 import streamlit as st
 import datetime 
 import smtplib
+from email.mime.text import MIMEText
 
 ###### STREAMLIT SETTINGS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 st.set_page_config(layout = 'wide', page_title='Cinema Dashboard', page_icon='🍿')
@@ -46,26 +47,30 @@ try:
     conn = pyodbc.connect(conn_str)
 
 except Exception as e:
-    print(e)
-    reciever_emails = ['huynhthong02042002@gmail.com', 'trungthien0503@gmail.com','anhvi09042002@gmail.com']
+    error_info = str(e)
+    print(error_info)
+
+    reciever_emails = ['huynhthong02042002@gmail.com', 'trungthien0503@gmail.com','anhvi09042002@gmail.com','tuan.tn01012002@gmail.com']
     sender_gmail = st.secrets["sender_gmail"]
     sender_apppass = st.secrets["sender_apppass"]
     subject = st.secrets["subject"]
-    message = st.secrets["message"]
+    message = f'Streamlit App IP updated. \n Error details: {str(error_info)}'
 
     def sendemail(sender_gmail, sender_apppass, reciever, subject, message):
-        server = smtplib.SMTP('smtp.gmail.com',587)
-        server.ehlo()
-        server.starttls()
+        msg = MIMEText(message)
+        msg['Subject'] = subject
+        msg['From'] = sender_gmail
+        msg['To'] = reciever
 
-        server.login(sender_gmail,sender_apppass)
-        server.sendmail(sender_gmail, reciever,f'Subject: {subject}\n{message}')
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(sender_gmail, sender_apppass)
+        server.sendmail(sender_gmail, reciever, msg.as_string())
         server.quit()
         print(f'Mail sent to {reciever}') 
 
     for mail in reciever_emails:
         sendemail(sender_gmail, sender_apppass, mail, subject, message)
-
 
 ###### TABS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 sale_db, customer_db, about = st.tabs(["Doanh thu", "Khách hàng", "Giới thiệu"])
