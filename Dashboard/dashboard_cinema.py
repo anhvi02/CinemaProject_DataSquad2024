@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import pyodbc
 import streamlit as st
 import datetime 
+import smtplib
 
 ###### STREAMLIT SETTINGS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 st.set_page_config(layout = 'wide', page_title='Cinema Dashboard', page_icon='🍿')
@@ -20,27 +21,49 @@ st.markdown("""
         #stDecoration {display:none;}
     </style>
 """, unsafe_allow_html=True)
-color_1 = '#fb6f92'
-color_2 = '#ffc2d1'
-
+color_1 = '#14213d'
+# 14213d: xanh ghi
+# fb6f92: vang
+color_2 = '#fca311'
+# a3b18a
+#fca311: vang
 
 
 
 ##### DATABASE CONNECTING >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 # Connection details
-server = st.secrets["server"]
-database = st.secrets["database"]
-username = st.secrets["username"]
-password = st.secrets["password"]
-driver = "{ODBC Driver 17 for SQL Server}" 
+try:
+    server = st.secrets["server"]
+    database = st.secrets["database"]
+    username = st.secrets["username"]
+    password = st.secrets["password"]
+    driver = st.secrets["driver"] 
 
-# Connection string
-conn_str = f'DRIVER={driver};SERVER={server};DATABASE={database};UID={username};PWD={password}'
-# st.write(conn_str)
-# Connect to the database
-conn = pyodbc.connect(conn_str)
+    # Connection string
+    conn_str = f'DRIVER={driver};SERVER={server};DATABASE={database};UID={username};PWD={password}'
+    # st.write(conn_str)
+    # Connect to the database
+    conn = pyodbc.connect(conn_str)
 
+except Exception as e:
+    reciever_emails = ['huynhthong02042002@gmail.com', 'trungthien09503@gmail.com','anhvi09042002@gmail.com']
+    sender_gmail = st.secrets["sender_gmail"]
+    sender_apppass = st.secrets["sender_apppass"]
+    subject = st.secrets["subject"]
+    message = st.secrets["message"]
 
+    def sendemail(sender_gmail, sender_apppass, reciever, subject, message):
+        server = smtplib.SMTP('smtp.gmail.com',587)
+        server.ehlo()
+        server.starttls()
+
+        server.login(sender_gmail,sender_apppass)
+        server.sendmail(sender_gmail, reciever,f'Subject: {subject}\n{message}')
+        server.quit()
+        print(f'Mail sent to {reciever}') 
+
+    for mail in reciever_emails:
+        sendemail(sender_gmail, sender_apppass, mail, subject, message)
 
 
 ###### TABS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -56,33 +79,117 @@ df_film = pd.read_sql(query_film, conn)
 ### Ticket Data
 query_tick = 'SELECT * FROM Ticket'
 df_tick = pd.read_sql(query_tick, conn)
+df_tick['showtime'] = pd.to_datetime(df_tick['showtime'])
+
+def extract_week(data):
+    data = data.isocalendar()[1]
+    return data
+
+df_tick['date'] = df_tick['showtime'].dt.date
+df_tick['hour'] = df_tick['showtime'].dt.hour
+df_tick['weekinyear'] = df_tick['showtime'].apply(extract_week)
+df_tick['dayinweek'] = df_tick['showtime'].dt.day_name()
 
 ### Order Data
 df_order = df_tick.drop_duplicates(subset=['orderid'])
 
+#### CHART PREPRARING  -------------------------->
+# LINE CHART: sales by day in week
+def visualize_line_salesbywwek():
+    df_sale_time = df_order.copy()
+    
+    # week = []
+    # # Extract date and hour from 'showtime'
+    # for ele in  df_sale_time['showtime']:
+    #     week.append(ele.isocalendar()[1])
+    # df_sale_time['dayinweek'] = df_sale_time['showtime'].dt.day_name()
+    # df_sale_time['weekinyear'] = week
+
+    sale_by_dayinweek = pd.DataFrame(df_sale_time.groupby(['dayinweek','weekinyear'])['total'].sum()).reset_index()
+    # Mapping days of the week to numbers
+    day_mapping = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3, 'Friday': 4, 'Saturday': 5, 'Sunday': 6}
+
+    sale_by_dayinweek['numbered_dayinweek']=sale_by_dayinweek['dayinweek'].map(day_mapping)
+    sale_by_dayinweek  = sale_by_dayinweek.sort_values(by='numbered_dayinweek')
+
+    # color_mapping_price = {'Sealand': '#ffc300', 'Non-Sealand': '#0466c8'}
+
+    chart_line_salesbyweek = px.line(sale_by_dayinweek,
+                    x="dayinweek",
+                    y="total",
+                    labels={'dayinweek': 'Thứ', 'weekinyear':'Tuần', 'total': 'Doanh thu'},
+                    title='Averge price per night changes over time',
+                    color="weekinyear",
+                    # color_discrete_map=color_mapping_price,
+                    # width=700,
+                    height=430,)
+    chart_line_salesbyweek.update_layout(title_x=0.3,
+                        title_xanchor='center')
+    st.plotly_chart(chart_line_salesbyweek, use_container_width=True)
+
+
+
+def visualize_line_salebyweekandhour(week = 0):
+    df_sale_time = df_order.copy()
+    df_sale_time['showtime'] = pd.to_datetime(df_sale_time['showtime'])
+
+
+    if week != 0:
+        df_sale_time = df_sale_time[df_sale_time['weekinyear'] == week]
+
+    df_visualize_salebyweek = pd.DataFrame(df_sale_time.groupby(['hour','dayinweek'])['total'].sum()).reset_index()
+    chart_line_salesbyweekandhour = px.line(df_visualize_salebyweek,
+                    x="hour",
+                    y="total",
+                    labels={'hour': 'Khung giờ', 'total': 'Doanh thu'},
+                    title=f'Doanh thu của tuần {week} theo khung giờ',
+                    color="dayinweek",
+                    # color_discrete_map=color_mapping_price,
+                    # width=700,
+                    height=430,)
+    chart_line_salesbyweekandhour.update_layout(title_x=0.3,
+                        title_xanchor='center')
+    
+    st.plotly_chart(chart_line_salesbyweekandhour, use_container_width=True)
+
+
+
+
 #### DISPLAYING SALES DASHBOARD  -------------------------->
 with sale_db:
-    st.markdown("<h3 style='text-align: center;'>Chuyển qua tab Khách hàng giùm chứ đây chưa có mẹ gì hết đâu</h3>", unsafe_allow_html=True)
-    st.write('##')
+    st.markdown("<h3 style='text-align: center;'>Dashboard doanh thu tháng 5</h3>", unsafe_allow_html=True)
 
-    # ### Sales Data Metrics
-    # # Total sale
-    # total_sale = df_order['total'].sum()
-    # # total_sale = '{:,.0f}'.format(total_sale)
-    # st.metric('Tổng doanh thu (VNĐ)', total_sale)
+    column1, column2 = st.columns([5,5])
+    with column1:
+        
+        list_week = list(df_order['showtime'].apply(extract_week).unique())
+        list_week.insert(0, 'Tất cả các tuần')
+        filter_week = st.selectbox('Tuần',list_week, index = 0)
+        if filter_week != 'Tất cả các tuần':
+            visualize_line_salebyweekandhour(week = filter_week)
+        else:
+            visualize_line_salebyweekandhour()
+        
+        
 
-    # # Total order
-    # total_order = len(df_order['orderid'])
-    # st.metric('Số lượng order', total_order)
+    ### Sales Data Metrics
+    # Total sale
+    total_sale = df_order['total'].sum()
+    # total_sale = '{:,.0f}'.format(total_sale)
+    st.metric('Tổng doanh thu (VNĐ)', total_sale)
 
-    # # Total film
-    # total_film = len(df_order['film'].unique())
-    # st.metric('Số phim được chiếu', total_film)
+    # Total order
+    total_order = len(df_order['orderid'])
+    st.metric('Số lượng order', total_order)
 
-    # ### Display data
-    # showdata = st.checkbox("Display Data")
-    # if showdata:
-    #     st.dataframe(df_cust, use_container_width=True)
+    # Total film
+    total_film = len(df_order['film'].unique())
+    st.metric('Số phim được chiếu', total_film)
+
+    ### Display data
+    showdata = st.checkbox("Display Data")
+    if showdata:
+        st.dataframe(df_cust, use_container_width=True)
 
 
 
