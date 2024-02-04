@@ -11,17 +11,17 @@ from email.mime.text import MIMEText
 
 ###### STREAMLIT SETTINGS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 st.set_page_config(layout = 'wide', page_title='Cinema Dashboard', page_icon='🍿')
-st.markdown("""
-    <style>
-        .reportview-container {
-            margin-top: -2em;
-        }
-        #MainMenu {visibility: hidden;}
-        .stDeployButton {display:none;}
-        footer {visibility: hidden;}
-        #stDecoration {display:none;}
-    </style>
-""", unsafe_allow_html=True)
+# st.markdown("""
+#     <style>
+#         .reportview-container {
+#             margin-top: -2em;
+#         }
+#         #MainMenu {visibility: hidden;}
+#         .stDeployButton {display:none;}
+#         footer {visibility: hidden;}
+#         #stDecoration {display:none;}
+#     </style>
+# """, unsafe_allow_html=True)
 color_1 = '#14213d'
 # 14213d: xanh ghi
 # fb6f92: vang
@@ -42,7 +42,6 @@ try:
 
     # Connection string
     conn_str = f'DRIVER={driver};SERVER={server};DATABASE={database};UID={username};PWD={password}'
-    # st.write(conn_str)
     # Connect to the database
     conn = pyodbc.connect(conn_str)
 
@@ -82,9 +81,14 @@ sale_db, customer_db, about = st.tabs(["Doanh thu", "Khách hàng", "Giới thi�
 query_film = 'SELECT * FROM Film'
 df_film = pd.read_sql(query_film, conn)
 
+### Cutomer Data
+query_cust = 'SELECT * FROM Customer'
+df_cust = pd.read_sql(query_cust, conn)
+
 ### Ticket Data
 query_tick = 'SELECT * FROM Ticket'
 df_tick = pd.read_sql(query_tick, conn)
+df_tick = pd.merge(df_tick, df_cust, how='left', on='customerid')
 df_tick['showtime'] = pd.to_datetime(df_tick['showtime'])
 
 def extract_week(data):
@@ -101,101 +105,294 @@ df_order = df_tick.drop_duplicates(subset=['orderid'])
 
 #### CHART PREPRARING  -------------------------->
 # LINE CHART: sales by day in week
-def visualize_line_salesbywwek():
+def visualize_line_salebyweekandhour(week):
     df_sale_time = df_order.copy()
-    
-    # week = []
-    # # Extract date and hour from 'showtime'
-    # for ele in  df_sale_time['showtime']:
-    #     week.append(ele.isocalendar()[1])
-    # df_sale_time['dayinweek'] = df_sale_time['showtime'].dt.day_name()
-    # df_sale_time['weekinyear'] = week
-
-    sale_by_dayinweek = pd.DataFrame(df_sale_time.groupby(['dayinweek','weekinyear'])['total'].sum()).reset_index()
-    # Mapping days of the week to numbers
-    day_mapping = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3, 'Friday': 4, 'Saturday': 5, 'Sunday': 6}
-
-    sale_by_dayinweek['numbered_dayinweek']=sale_by_dayinweek['dayinweek'].map(day_mapping)
-    sale_by_dayinweek  = sale_by_dayinweek.sort_values(by='numbered_dayinweek')
-
-    # color_mapping_price = {'Sealand': '#ffc300', 'Non-Sealand': '#0466c8'}
-
-    chart_line_salesbyweek = px.line(sale_by_dayinweek,
-                    x="dayinweek",
-                    y="total",
-                    labels={'dayinweek': 'Thứ', 'weekinyear':'Tuần', 'total': 'Doanh thu'},
-                    title='Averge price per night changes over time',
-                    color="weekinyear",
-                    # color_discrete_map=color_mapping_price,
-                    # width=700,
-                    height=430,)
-    chart_line_salesbyweek.update_layout(title_x=0.3,
-                        title_xanchor='center')
-    st.plotly_chart(chart_line_salesbyweek, use_container_width=True)
-
-
-
-def visualize_line_salebyweekandhour(week = 0):
-    df_sale_time = df_order.copy()
+    # preparing data
     df_sale_time['showtime'] = pd.to_datetime(df_sale_time['showtime'])
 
-
-    if week != 0:
-        df_sale_time = df_sale_time[df_sale_time['weekinyear'] == week]
+    # filtering
+    week_title = 'tất cả các tuần'
+    if week != 'Tất cả các tuần':
+        week_title = f'tuần {week}'
 
     df_visualize_salebyweek = pd.DataFrame(df_sale_time.groupby(['hour','dayinweek'])['total'].sum()).reset_index()
+
+    # coloring
+    # color_mapping_day = ['#FCA311', '#D58D18', '#AF7820','#886227', '#614C2E','#3B3736', '#14213D']
+    color_mapping_day = ['#FCA311', '#B59245', '#4B7794','#0466C8', '#0952A0','#0F3565', '#14213D']
+    dict_color = {}
+    for ind, date in enumerate(df_visualize_salebyweek['dayinweek'].unique()):
+        dict_color[date] = color_mapping_day[ind]
+
     chart_line_salesbyweekandhour = px.line(df_visualize_salebyweek,
                     x="hour",
                     y="total",
-                    labels={'hour': 'Khung giờ', 'total': 'Doanh thu'},
-                    title=f'Doanh thu của tuần {week} theo khung giờ',
+                    labels={'hour': 'Khung giờ', 'total': 'Doanh thu', 'dayinweek': 'Ngày trong tuần'},
+                    title=f'Doanh thu của {week_title} theo khung giờ',
                     color="dayinweek",
-                    # color_discrete_map=color_mapping_price,
+                    color_discrete_map=dict_color,
+                    markers = True,
                     # width=700,
-                    height=430,)
-    chart_line_salesbyweekandhour.update_layout(title_x=0.3,
-                        title_xanchor='center')
+                    height=400)
+    chart_line_salesbyweekandhour.update_layout(
+                                        # paper_bgcolor='rgb(255,255,255)',
+                                        margin=dict(l=0, r=10, t=40, b=30),
+                                        xaxis=dict(tickmode='linear', dtick=2),
+                                        title_x=0.5,
+                                        title_xanchor='center')
+
     
     st.plotly_chart(chart_line_salesbyweekandhour, use_container_width=True)
 
 
+def visualize_pareto(column, number_to_display, title, x_label, y_label, y2_label):
+    df_pareto = df_order.copy()
 
+    df_pareto = pd.DataFrame(df_pareto.groupby(column)['total'].sum()).reset_index().sort_values(by='total', ascending=False)
+
+    # Calculate cumulative sum
+    df_pareto['cumulative_sum'] = df_pareto['total'].cumsum()
+    # Calculate total sum
+    total_sum = df_pareto['total'].sum()
+    # Calculate cumulative percentage
+    df_pareto['cumulative_percentage'] = (df_pareto['cumulative_sum'] / total_sum) * 100
+    df_pareto = df_pareto.head(number_to_display)
+
+    # bar chart for sales
+    chart_pareto_sale = px.bar(df_pareto, x=column, y='total', 
+                            title=title,
+                            labels={column: x_label, 'total': y_label},
+                            hover_data=['total'],
+                            color_discrete_sequence=[color_1], 
+                            height=600)
+        # line chart for cumulative percentage
+    chart_pareto_sale.add_scatter(x=df_pareto[column], y=df_pareto['cumulative_percentage'], 
+                        mode='lines', 
+                        name='Phần trăm doanh thu tích lũy', 
+                        yaxis='y2', 
+                        line=dict(color=color_2), 
+                        hoverinfo='y')
+    
+    chart_pareto_sale.update_layout(
+                        yaxis2=dict(
+                            title=y2_label,
+                            overlaying='y', # important
+                            side='right',
+                            range=[0, df_pareto['cumulative_percentage'].head(number_to_display).tail(1)]),
+                        title_x=0.5,
+                        title_xanchor='center',
+                        xaxis_type='category', # making sure plotly interpret customerid as categorical data
+                        showlegend=False,
+                        # legend=dict(
+                        #     yanchor="top",
+                        #     xanchor="right", )
+                        )
+    st.plotly_chart(chart_pareto_sale, use_container_width=True)
+
+
+def visualize_line_salebydate():
+    df_sale_by_date = df_order.sort_values(by= 'saledate')
+    df_sale_by_date['date'] = df_sale_by_date['date'].astype(str)
+    df_sale_by_date = df_sale_by_date.groupby('date')['total'].sum().reset_index()
+
+    # color_mapping_price = {'Sealand': '#ffc300', 'Non-Sealand': '#0466c8'}
+
+    chart_line_sale = px.line(df_sale_by_date,
+                    x="date",
+                    y="total",
+                    title='Doanh thu theo các ngày trong tháng 5',
+                    markers = True,
+                    # width=700,
+                    height=400,
+                    labels={'date': 'Ngày', 'total':'Doanh thu'})
+    chart_line_sale.update_traces(line_color= color_2, line_width=3)
+    chart_line_sale.update_layout(title_x=0.5, 
+                                  title_xanchor='center',
+                                #   paper_bgcolor='rgb(255,255,255)',
+                                  margin=dict(l=0, r=10, t=40, b=30),
+                                  xaxis_type='category',
+                                  xaxis=dict(tickmode='linear', dtick=2))
+    st.plotly_chart(chart_line_sale, use_container_width=True)
+    
+
+def visualize_pie(column, chart_title):
+    pie_ratio = round((df_tick[column].value_counts()/len(df_tick))*100,2)
+    df_pie = pd.DataFrame(pie_ratio).reset_index().sort_values(by='count', ascending=False)
+
+    list_color = [color_1, color_2]
+    # df_pie['color'] = df_pie[column].map(list_)
+
+    chart_pie = px.pie(df_pie, 
+                        names=column, 
+                        values='count',
+                        title=chart_title,
+                        # color = column, 
+                        color_discrete_sequence= list_color,
+                        hole=0.4, 
+                        height=320)
+
+    chart_pie.update_layout(showlegend=False,
+                                # paper_bgcolor='rgb(255,0,255)',
+                                margin=dict(l=0, r=10, t=70, b=40),
+                                title_x=0.5,
+                                title_xanchor='center',
+                                autosize=False,
+                                width=300)
+    chart_pie.update_traces(text=df_pie[column], textposition='outside')
+
+    st.plotly_chart(chart_pie, use_container_width=True)
+
+
+### Histogram: Seat row distribution
+def visualize_histogram_seat():
+    df_seat = df_tick.copy()
+    def extract_seatrow(data):
+        return data[:1]
+
+    # extract seat_row
+    df_seat['seat_row'] = df_seat['slot'].apply(extract_seatrow)
+    df_seat = df_seat.sort_values(by='seat_row')
+    
+    chart_histo_seat = px.histogram(df_seat, 
+                                x='seat_row', 
+                                title='Phân bố số lượng vé ở mỗi hàng ghế',
+                                labels={'seat_row': 'Hàng ghế'},
+                                color_discrete_sequence=[color_1],
+                                height=400)
+    chart_histo_seat.update_layout(
+                            # paper_bgcolor='rgb(255,255,255)',
+                            # margin=dict(l=10, r=10, t=30, b=0), 
+                            # xaxis_title='Tuổi',
+                            yaxis_title='Số lượng vé',
+                            bargap=0.1,  
+                            title_x=0.55,  
+                            title_xanchor='center',
+                            showlegend=True,) 
+    st.plotly_chart(chart_histo_seat, use_container_width=True)
+    
+def visualize_pie_room():
+    df_sale_by_room = df_order.copy()
+    df_sale_by_room = df_sale_by_room.groupby('room')['total'].sum().reset_index().sort_values(by='total', ascending=False)
+
+    color_mapping_room = ['#14213D', '#614C2E', '#AF7820', '#FCA311']
+
+    # Convert 'room' column to categorical
+    df_sale_by_room['room'] = pd.Categorical(df_sale_by_room['room'])
+    df_sale_by_room['proportion'] = (df_sale_by_room['total']/sum(df_sale_by_room['total']))*100
+
+    # chart_bar_room = px.bar(
+    #     df_sale_by_room,
+    #     x='room',
+    #     y='total',
+    #     color='room',  # Set the color parameter to the 'room' column
+    #     color_discrete_sequence=color_mapping_room,  # Specify the color sequence
+    #     labels={'room': 'Phòng', 'total': 'Doanh thu'},
+    #     title='Doanh thu theo các phòng chiếu',
+    #     height=475
+    # )
+    # chart_bar_room.update_layout(
+    #     title_x=0.5,
+    #     title_xanchor='center',
+    #     xaxis_type='category'
+    # )
+
+    # st.plotly_chart(chart_bar_room, use_container_width=True)
+
+    chart_pie_room = px.pie(df_sale_by_room, 
+                        names='room', 
+                        values='proportion',
+                        title='Doanh thu theo phòng chiếu',
+                        labels = {'room': 'Phòng chiếu', 'proportion': 'Phần trăm doanh thu'},
+                        # color = column, 
+                        color_discrete_sequence = color_mapping_room,
+                        hole=0.4, 
+                        height=320)
+
+    chart_pie_room.update_layout(showlegend=True,
+                                # paper_bgcolor='rgb(255,0,255)',
+                                margin=dict(l=0, r=10, t=70, b=40),
+                                title_x=0.5,
+                                title_xanchor='center',
+                                autosize=False,
+                                width=300,
+                                )
+    chart_pie_room.update_traces(text=df_sale_by_room['room'], textposition='outside')
+
+    st.plotly_chart(chart_pie_room, use_container_width=True)
 
 #### DISPLAYING SALES DASHBOARD  -------------------------->
 with sale_db:
     st.markdown("<h3 style='text-align: center;'>Dashboard doanh thu tháng 5</h3>", unsafe_allow_html=True)
 
-    column1, column2 = st.columns([5,5])
-    with column1:
+    metric, filter_pie = st.columns([4.5,5.5]) 
+
+    with filter_pie:
+        # Column3: pie + histo | Column4: filter + bar
+        pie, all_filters = st.columns([6,4])
+        with all_filters:
+            # MULTIPLE EFFECT FIlTER: week
+            list_week = sorted(list(df_order['weekinyear'].unique()))
+            list_week.insert(0, 'Tất cả các tuần')
+            filter_week = st.selectbox('Tuần',list_week, index = 0)
+            if filter_week != 'Tất cả các tuần':
+                df_tick = df_tick[df_tick['weekinyear'] == filter_week]
+                df_order = df_tick.drop_duplicates(subset=['orderid'])
+
+            st.write('---')
+            # SINGLE EFFECT FILTER: measurement for pie chart
+            measurements_pie = ['Slot type', 'Ticket Type']
+            filter_slot_for_ticket = st.selectbox('Biểu đồ tròn: lọc dữ liệu', measurements_pie, index = 0)
+
+
+            # SINGLE EFFECT FILTER: measurement for pareto
+            measurements_pareto = ['Film', 'Khách hàng', 'Job', 'Industry']
+            filter_slot_or_ticket = st.selectbox('Biểu đồ Pareto: lọc dữ liệu', measurements_pareto, index = 0)
+            list_columns = ['film', 'customerid', 'job', 'industry']
+            column_for_pareto = list_columns[measurements_pareto.index(filter_slot_or_ticket)]
+
+        with pie:
+            # PIE: Slot type and Ticket_type ratio
+            if filter_slot_for_ticket == 'Slot type':
+                visualize_pie(column= 'slot_type', chart_title= 'Tỉ lệ vé của các loại ghế')
+            else:
+                visualize_pie(column= 'ticket_type', chart_title= 'Tỉ lệ vé của thành viên')
+
+        visualize_line_salebyweekandhour(week = filter_week)
+        # PARETO: film, industry, job
+        visualize_pareto(column= column_for_pareto, 
+                        number_to_display= 15, 
+                        title= f'Doanh thu tích lũy theo {filter_slot_or_ticket}', 
+                        x_label= filter_slot_or_ticket,
+                        y_label= 'Doanh thu',
+                        y2_label= 'Tích lũy doanh thu')
         
-        list_week = list(df_order['showtime'].apply(extract_week).unique())
-        list_week.insert(0, 'Tất cả các tuần')
-        filter_week = st.selectbox('Tuần',list_week, index = 0)
-        if filter_week != 'Tất cả các tuần':
-            visualize_line_salebyweekandhour(week = filter_week)
-        else:
-            visualize_line_salebyweekandhour()
         
-        
+    with metric:
+        metric1, metric2 = st.columns([7,3])
+        with metric1:
+            # Total sale
+            total_sale = df_order['total'].sum()
+            total_sale = '{:,.0f}'.format(total_sale)
+            st.metric('Tổng doanh thu (VNĐ)', total_sale)
+        with metric2:
+            # Total film
+            total_film = len(df_order['film'].unique())
+            st.metric('Số phim được chiếu', total_film)
 
-    ### Sales Data Metrics
-    # Total sale
-    total_sale = df_order['total'].sum()
-    # total_sale = '{:,.0f}'.format(total_sale)
-    st.metric('Tổng doanh thu (VNĐ)', total_sale)
+        # Total order
+        total_order = len(df_order['orderid'])
+        st.metric('Số lượng order', total_order)
 
-    # Total order
-    total_order = len(df_order['orderid'])
-    st.metric('Số lượng order', total_order)
+        # LINE: sale by date
+        visualize_line_salebydate()
 
-    # Total film
-    total_film = len(df_order['film'].unique())
-    st.metric('Số phim được chiếu', total_film)
+        # HISTOGRAM: seat
+        visualize_histogram_seat()
 
-    ### Display data
-    showdata = st.checkbox("Display Data")
-    if showdata:
-        st.dataframe(df_cust, use_container_width=True)
+        # PIE: sales by room
+        visualize_pie_room()
+
+
 
 
 
