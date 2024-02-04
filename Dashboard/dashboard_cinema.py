@@ -11,24 +11,33 @@ from email.mime.text import MIMEText
 
 ###### STREAMLIT SETTINGS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 st.set_page_config(layout = 'wide', page_title='Cinema Dashboard', page_icon='🍿')
-# st.markdown("""
-#     <style>
-#         .reportview-container {
-#             margin-top: -2em;
-#         }
-#         #MainMenu {visibility: hidden;}
-#         .stDeployButton {display:none;}
-#         footer {visibility: hidden;}
-#         #stDecoration {display:none;}
-#     </style>
-# """, unsafe_allow_html=True)
+st.markdown("""
+    <style>
+        .reportview-container {
+            margin-top: -2em;
+        }
+        #MainMenu {visibility: hidden;}
+        .stDeployButton {display:none;}
+        footer {visibility: hidden;}
+        #stDecoration {display:none;}
+    </style>
+""", unsafe_allow_html=True)
+st.markdown(
+    """
+    <style>
+    body {
+        background-color: #e5e5e5;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 color_1 = '#14213d'
 # 14213d: xanh ghi
 # fb6f92: vang
 color_2 = '#fca311'
 # a3b18a
 #fca311: vang
-
 
 
 ##### DATABASE CONNECTING >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
