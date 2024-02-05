@@ -9,10 +9,6 @@ import datetime
 import smtplib
 from email.mime.text import MIMEText
 
-
-# LÀM FILTER: PARETO->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-
 ###### STREAMLIT SETTINGS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 st.set_page_config(layout = 'wide', page_title='Cinema Dashboard', page_icon='🍿')
 st.markdown("""
@@ -27,7 +23,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-color_1 = '#14213d'
+color_1 = '#0077b6'
 color_2 = '#fca311'
 
 
