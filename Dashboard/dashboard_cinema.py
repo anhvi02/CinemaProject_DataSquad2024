@@ -11,17 +11,17 @@ from email.mime.text import MIMEText
 
 ###### STREAMLIT SETTINGS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 st.set_page_config(layout = 'wide', page_title='Cinema Dashboard', page_icon='🍿')
-st.markdown("""
-    <style>
-        .reportview-container {
-            margin-top: -2em;
-        }
-        #MainMenu {visibility: hidden;}
-        .stDeployButton {display:none;}
-        footer {visibility: hidden;}
-        #stDecoration {display:none;}
-    </style>
-""", unsafe_allow_html=True)
+# st.markdown("""
+#     <style>
+#         .reportview-container {
+#             margin-top: -2em;
+#         }
+#         #MainMenu {visibility: hidden;}
+#         .stDeployButton {display:none;}
+#         footer {visibility: hidden;}
+#         #stDecoration {display:none;}
+#     </style>
+# """, unsafe_allow_html=True)
 
 color_1 = '#0077b6'
 color_2 = '#fca311'
