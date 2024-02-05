@@ -9,6 +9,10 @@ import datetime
 import smtplib
 from email.mime.text import MIMEText
 
+
+# LÀM FILTER: PARETO->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
 ###### STREAMLIT SETTINGS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 st.set_page_config(layout = 'wide', page_title='Cinema Dashboard', page_icon='🍿')
 st.markdown("""
@@ -22,22 +26,9 @@ st.markdown("""
         #stDecoration {display:none;}
     </style>
 """, unsafe_allow_html=True)
-st.markdown(
-    """
-    <style>
-    body {
-        background-color: #e5e5e5;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+
 color_1 = '#14213d'
-# 14213d: xanh ghi
-# fb6f92: vang
 color_2 = '#fca311'
-# a3b18a
-#fca311: vang
 
 
 ##### DATABASE CONNECTING >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -86,31 +77,43 @@ sale_db, customer_db, about = st.tabs(["Doanh thu", "Khách hàng", "Giới thi�
 
 ##### SALES DASHBOARD>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #### DATA PREPRARING  -------------------------->
-### Film Data
-query_film = 'SELECT * FROM Film'
-df_film = pd.read_sql(query_film, conn)
+@st.cache_data(ttl=86400)
+def load_data_sales():
+    ### Film Data
+    query_film = 'SELECT * FROM Film'
+    df_film = pd.read_sql(query_film, conn)
 
-### Cutomer Data
-query_cust = 'SELECT * FROM Customer'
-df_cust = pd.read_sql(query_cust, conn)
+    ### Customer Data
+    query_cust = 'SELECT * FROM Customer'
+    df_cust = pd.read_sql(query_cust, conn)
 
-### Ticket Data
-query_tick = 'SELECT * FROM Ticket'
-df_tick = pd.read_sql(query_tick, conn)
-df_tick = pd.merge(df_tick, df_cust, how='left', on='customerid')
-df_tick['showtime'] = pd.to_datetime(df_tick['showtime'])
+    def extract_age(birthday):
+        today = datetime.datetime.now().year
+        age = today - birthday.year
+        return age
+    df_cust['age'] = df_cust['DOB'].apply(extract_age)
 
-def extract_week(data):
-    data = data.isocalendar()[1]
-    return data
+    ### Ticket Data
+    query_tick = 'SELECT * FROM Ticket'
+    df_tick = pd.read_sql(query_tick, conn)
+    df_tick = pd.merge(df_tick, df_cust, how='left', on='customerid')
+    df_tick['showtime'] = pd.to_datetime(df_tick['showtime'])
 
-df_tick['date'] = df_tick['showtime'].dt.date
-df_tick['hour'] = df_tick['showtime'].dt.hour
-df_tick['weekinyear'] = df_tick['showtime'].apply(extract_week)
-df_tick['dayinweek'] = df_tick['showtime'].dt.day_name()
+    def extract_week(data):
+        data = data.isocalendar()[1]
+        return data
 
-### Order Data
-df_order = df_tick.drop_duplicates(subset=['orderid'])
+    df_tick['date'] = df_tick['showtime'].dt.date
+    df_tick['hour'] = df_tick['showtime'].dt.hour
+    df_tick['weekinyear'] = df_tick['showtime'].apply(extract_week)
+    df_tick['dayinweek'] = df_tick['showtime'].dt.day_name()
+
+    ### Order Data
+    df_order = df_tick.drop_duplicates(subset=['orderid'])
+
+    return df_film, df_cust, df_tick, df_order
+
+df_film, df_cust, df_tick, df_order = load_data_sales()
 
 #### CHART PREPRARING  -------------------------->
 # LINE CHART: sales by day in week
@@ -289,24 +292,6 @@ def visualize_pie_room():
     df_sale_by_room['room'] = pd.Categorical(df_sale_by_room['room'])
     df_sale_by_room['proportion'] = (df_sale_by_room['total']/sum(df_sale_by_room['total']))*100
 
-    # chart_bar_room = px.bar(
-    #     df_sale_by_room,
-    #     x='room',
-    #     y='total',
-    #     color='room',  # Set the color parameter to the 'room' column
-    #     color_discrete_sequence=color_mapping_room,  # Specify the color sequence
-    #     labels={'room': 'Phòng', 'total': 'Doanh thu'},
-    #     title='Doanh thu theo các phòng chiếu',
-    #     height=475
-    # )
-    # chart_bar_room.update_layout(
-    #     title_x=0.5,
-    #     title_xanchor='center',
-    #     xaxis_type='category'
-    # )
-
-    # st.plotly_chart(chart_bar_room, use_container_width=True)
-
     chart_pie_room = px.pie(df_sale_by_room, 
                         names='room', 
                         values='proportion',
@@ -346,18 +331,12 @@ with sale_db:
             if filter_week != 'Tất cả các tuần':
                 df_tick = df_tick[df_tick['weekinyear'] == filter_week]
                 df_order = df_tick.drop_duplicates(subset=['orderid'])
-
-            st.write('---')
+            
+            st.write('-----')
             # SINGLE EFFECT FILTER: measurement for pie chart
             measurements_pie = ['Slot type', 'Ticket Type']
             filter_slot_for_ticket = st.selectbox('Biểu đồ tròn: lọc dữ liệu', measurements_pie, index = 0)
 
-
-            # SINGLE EFFECT FILTER: measurement for pareto
-            measurements_pareto = ['Film', 'Khách hàng', 'Job', 'Industry']
-            filter_slot_or_ticket = st.selectbox('Biểu đồ Pareto: lọc dữ liệu', measurements_pareto, index = 0)
-            list_columns = ['film', 'customerid', 'job', 'industry']
-            column_for_pareto = list_columns[measurements_pareto.index(filter_slot_or_ticket)]
 
         with pie:
             # PIE: Slot type and Ticket_type ratio
@@ -367,9 +346,27 @@ with sale_db:
                 visualize_pie(column= 'ticket_type', chart_title= 'Tỉ lệ vé của thành viên')
 
         visualize_line_salebyweekandhour(week = filter_week)
+
+
+        filter_pareto1, filter_pareto2 = st.columns([5,5])
+        with filter_pareto1:
+            # SINGLE EFFECT FILTER: measurement for pareto
+            measurements_pareto = ['Film', 'Khách hàng', 'Job', 'Industry']
+            filter_slot_or_ticket = st.selectbox('Biểu đồ Pareto: lọc dữ liệu', measurements_pareto, index = 0)
+            list_columns = ['film', 'customerid', 'job', 'industry']
+            column_for_pareto = list_columns[measurements_pareto.index(filter_slot_or_ticket)]
+        with filter_pareto2:
+            # SINGLE EFFECT FILTER: number for display
+            max_number = len(df_order[column_for_pareto].unique())
+            default_number = 15
+            if default_number >= max_number:
+                default_number = max_number
+            display_customer = st.number_input(f'Số lượng dữ liệu hiển thị (tối đa {max_number})', 
+                                        min_value= 1, max_value= max_number, step = 1,
+                                        value= default_number)
         # PARETO: film, industry, job
         visualize_pareto(column= column_for_pareto, 
-                        number_to_display= 15, 
+                        number_to_display= display_customer, 
                         title= f'Doanh thu tích lũy theo {filter_slot_or_ticket}', 
                         x_label= filter_slot_or_ticket,
                         y_label= 'Doanh thu',
@@ -408,19 +405,26 @@ with sale_db:
 ##### CUSTOMER DASHBOARD >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #### DATA PREPARING -------------------------->
 ### Customer Data
-query_cust = 'SELECT * FROM Customer'
-df_cust = pd.read_sql(query_cust, conn)
-def extract_age(birthday):
-    today = datetime.datetime.now().year
-    age = today - birthday.year
-    return age
-df_cust['age'] = df_cust['DOB'].apply(extract_age)
+@st.cache_data(ttl=86400)
+def load_data_customer():
+    query_cust = 'SELECT * FROM Customer'
+    df_cust = pd.read_sql(query_cust, conn)
+    def extract_age(birthday):
+        today = datetime.datetime.now().year
+        age = today - birthday.year
+        return age
+    df_cust['age'] = df_cust['DOB'].apply(extract_age)
 
-### Order data
-df_order = df_tick.drop_duplicates(subset=['orderid'])
+    ### Order data
+    query_tick = 'SELECT * FROM Ticket'
+    df_tick = pd.read_sql(query_tick, conn)
+    df_order = df_tick.drop_duplicates(subset=['orderid'])
 
-### Sale data by customer
-df_order_cust = pd.merge(df_order, df_cust, how='left', on='customerid')
+    ### Sale data by customer
+    df_order_cust = pd.merge(df_order, df_cust, how='left', on='customerid')
+
+    return df_cust, df_order, df_order_cust
+df_cust, df_order, df_order_cust = load_data_customer()
 
 #### CHARTS PREPARING -------------------------->
 ### Histogram: Age Distribution
