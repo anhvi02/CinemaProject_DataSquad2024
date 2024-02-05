@@ -604,10 +604,14 @@ with customer_db:
 with about:
     with st.container():
         st.subheader("Giới thiệu dự án :wave:")
-        st.write("Dự án phân tích dữ liệu của một rạp phim nhằm đưa ra những cải tiến, tối đa hóa kinh doanh")
-        st.write(
-            "Dự án thuộc khuôn khổ cuộc thi Data GotTalent 2024. Bởi đội thi DataSquad"
-        )
+        st.write("Dự án phân tích dữ liệu của một rạp phim nhằm đưa ra những cải tiến, tối đa hóa hoạt động kinh doanh")
+        st.write("""
+            Dự án thuộc khuôn khổ cuộc thi Data GotTalent 2024. Bởi đội thi DataSquad  
+            Mô tả dự án:
+            Với bộ dữ liệu về một rạp phim được cung cấp bởi ban tổ chức cuộc thi Data GotTalent 2024, đội ngũ DataSquad đã xử lý, phân tích và đưa ra những đề xuất nhằm tối ưu hóa hoạt động kinh doanh.  
+            Bên cạnh đó, DataSquad còn xây dựng một database với nền tảng Azure nhằm lưu trữ dữ liệu cùng với một data pipeline để thực hiện quá trình ETL bao gồm extract dữ liệu từ file spreadsheet, transform dữ liệu và load vào database.  
+            Sau cùng, một dashboard được xây dựng với Streamlit để báo cáo kinh doanh.  
+        """)
         st.write("[Chi tiết dự án xem tại đây](https://github.com/anhvi02/CinemaProject)")
     st.write("---")
     st.subheader("Giới thiệu thành viên DataSquad :wave:")
