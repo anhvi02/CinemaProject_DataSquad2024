@@ -266,7 +266,7 @@ def visualize_histogram_seat():
                                 title='Phân bố số lượng vé ở mỗi hàng ghế',
                                 labels={'seat_row': 'Hàng ghế'},
                                 color_discrete_sequence=[color_1],
-                                height=420)
+                                height=440)
     chart_histo_seat.update_layout(
                             # paper_bgcolor='rgb(255,255,255)',
                             # margin=dict(l=10, r=10, t=30, b=0), 
