@@ -601,7 +601,51 @@ with customer_db:
         visualize_pareto_sales(display_customer)
 
 with about:
-    st.header("👑 BY KING HENRY 👑")
+    with st.container():
+        st.subheader("Giới thiệu dự án :wave:")
+        st.write("Dự án phân tích dữ liệu của một rạp phim nhằm đưa ra những cải tiến, tối đa hóa kinh doanh")
+        st.write(
+            "Dự án thuộc khuôn khổ cuộc thi Data GotTalent 2024. Bởi đội thi DataSquad"
+        )
+        st.write("[Chi tiết dự án xem tại đây](https://github.com/anhvi02/CinemaProject)")
+    st.write("---")
+    st.subheader("Giới thiệu thành viên DataSquad :wave:")
+    with st.container():
+        vi, thong, thien, tuan = st.columns([2.5, 2.5, 2.5, 2.5])
+        with vi:
+            st.subheader('Phạm Anh Vĩ')
+            st.caption('Deakin University')
+            st.write("""
+                Chịu trách nhiệm:  
+                    - Xây dựng database và data pipeline  
+                    - Xây dựng dashboard  
+                    - Phân tích dữ liệu  
+                    - Quản lý dự án  
+                     """)
+        with thong:
+            st.subheader('Huỳnh Thông')
+            st.caption('Danang University of Economics')
+            st.write("""
+                Chịu trách nhiệm:  
+                    - Phân tích dữ liệu  
+                    - Khám phá, xử lý dữ liệu  
+                     """)
+        with thien:
+            st.subheader('Phù Trung Thiện')
+            st.caption('Danang University of Economics')
+            st.write("""
+                Chịu trách nhiệm:  
+                    - Phân tích dữ liệu  
+                    - Data storyTelling  
+                     """)
+        with tuan:
+            st.subheader('Trần Ngọc Tuấn')
+            st.caption('Danang University of Economics')
+            st.write("""
+                Chịu trách nhiệm:  
+                    - Phân tích dữ liệu  
+                    - Tiền xử lý dữ liệu  
+                     """)
 
 
 
