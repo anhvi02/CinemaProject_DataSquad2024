@@ -612,7 +612,7 @@ with about:
             Bên cạnh đó, DataSquad còn xây dựng một database với nền tảng Azure nhằm lưu trữ dữ liệu cùng với một data pipeline để thực hiện quá trình ETL bao gồm extract dữ liệu từ file spreadsheet, transform dữ liệu và load vào database.  
             Sau cùng, một dashboard được xây dựng với Streamlit để báo cáo kinh doanh.  
         """)
-        st.write("[Chi tiết dự án xem tại đây](https://github.com/anhvi02/CinemaProject)")
+        st.write("[Chi tiết dự án xem tại đây](https://github.com/anhvi02/CinemaProject_DataSquad2024)")
     st.write("---")
     st.subheader("Giới thiệu thành viên DataSquad :wave:")
     with st.container():
