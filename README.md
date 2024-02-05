@@ -18,7 +18,7 @@ Sau cùng, một dashboard được xây dựng với Streamlit để báo cáo 
     - Sales dashboard
     - Customer dashboard
     - Giới thiệu
-3. report_cineman.pdf
+3. report_cinema.pdf
     - Tổng hợp nội dung phân tích
     - Tiền xử lý và khám phá dữ liệu
     - Phân tích dữ liệu
