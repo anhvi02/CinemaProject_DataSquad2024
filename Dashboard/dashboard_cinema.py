@@ -65,8 +65,9 @@ except Exception as e:
         server.quit()
         print(f'Mail sent to {reciever}') 
 
-    for mail in reciever_emails:
-        sendemail(sender_gmail, sender_apppass, mail, subject, message)
+    ##################################### STOP EMAILING FOR A WHILE ##########################################
+    # for mail in reciever_emails:
+    #    sendemail(sender_gmail, sender_apppass, mail, subject, message)
 
 ###### TABS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 sale_db, customer_db, about = st.tabs(["Doanh thu", "Khách hàng", "Giới thiệu"])
