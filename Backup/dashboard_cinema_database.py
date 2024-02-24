@@ -28,45 +28,46 @@ color_1 = '#0077b6'
 color_2 = '#fca311'
 
 
-# ##### DATABASE CONNECTING >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-# # Connection details
-# try:
-#     server = st.secrets["server"]
-#     database = st.secrets["database"]
-#     username = st.secrets["username"]
-#     password = st.secrets["password"]
-#     driver = st.secrets["driver"] 
+##### DATABASE CONNECTING >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# Connection details
+try:
+    server = st.secrets["server"]
+    database = st.secrets["database"]
+    username = st.secrets["username"]
+    password = st.secrets["password"]
+    driver = st.secrets["driver"] 
 
-#     # Connection string
-#     conn_str = f'DRIVER={driver};SERVER={server};DATABASE={database};UID={username};PWD={password}'
-#     # Connect to the database
-#     conn = pyodbc.connect(conn_str)
+    # Connection string
+    conn_str = f'DRIVER={driver};SERVER={server};DATABASE={database};UID={username};PWD={password}'
+    # Connect to the database
+    conn = pyodbc.connect(conn_str)
 
-# except Exception as e:
-#     error_info = str(e)
-#     print(error_info)
+except Exception as e:
+    error_info = str(e)
+    print(error_info)
 
-#     reciever_emails = ['huynhthong02042002@gmail.com', 'trungthien0503@gmail.com','anhvi09042002@gmail.com','tuan.tn01012002@gmail.com']
-#     sender_gmail = st.secrets["sender_gmail"]
-#     sender_apppass = st.secrets["sender_apppass"]
-#     subject = st.secrets["subject"]
-#     message = f'Streamlit App IP updated. \n Error details: {str(error_info)}'
+    reciever_emails = ['huynhthong02042002@gmail.com', 'trungthien0503@gmail.com','anhvi09042002@gmail.com','tuan.tn01012002@gmail.com']
+    sender_gmail = st.secrets["sender_gmail"]
+    sender_apppass = st.secrets["sender_apppass"]
+    subject = st.secrets["subject"]
+    message = f'Streamlit App IP updated. \n Error details: {str(error_info)}'
 
-#     def sendemail(sender_gmail, sender_apppass, reciever, subject, message):
-#         msg = MIMEText(message)
-#         msg['Subject'] = subject
-#         msg['From'] = sender_gmail
-#         msg['To'] = reciever
+    def sendemail(sender_gmail, sender_apppass, reciever, subject, message):
+        msg = MIMEText(message)
+        msg['Subject'] = subject
+        msg['From'] = sender_gmail
+        msg['To'] = reciever
 
-#         server = smtplib.SMTP('smtp.gmail.com', 587)
-#         server.starttls()
-#         server.login(sender_gmail, sender_apppass)
-#         server.sendmail(sender_gmail, reciever, msg.as_string())
-#         server.quit()
-#         print(f'Mail sent to {reciever}') 
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(sender_gmail, sender_apppass)
+        server.sendmail(sender_gmail, reciever, msg.as_string())
+        server.quit()
+        print(f'Mail sent to {reciever}') 
 
-#     for mail in reciever_emails:
-#        sendemail(sender_gmail, sender_apppass, mail, subject, message)
+    ##################################### STOP EMAILING FOR A WHILE ##########################################
+    # for mail in reciever_emails:
+    #    sendemail(sender_gmail, sender_apppass, mail, subject, message)
 
 ###### TABS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 sale_db, customer_db, about = st.tabs(["Doanh thu", "Khách hàng", "Giới thiệu"])
@@ -74,51 +75,16 @@ sale_db, customer_db, about = st.tabs(["Doanh thu", "Khách hàng", "Giới thi�
 
 ##### SALES DASHBOARD>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #### DATA PREPRARING  -------------------------->
-# @st.cache_data(ttl=86400)
-# def load_data_sales():
-#     ### Film Data
-#     query_film = 'SELECT * FROM Film'
-#     df_film = pd.read_sql(query_film, conn)
-
-#     ### Customer Data
-#     query_cust = 'SELECT * FROM Customer'
-#     df_cust = pd.read_sql(query_cust, conn)
-
-#     def extract_age(birthday):
-#         today = datetime.datetime.now().year
-#         age = today - birthday.year
-#         return age
-#     df_cust['age'] = df_cust['DOB'].apply(extract_age)
-
-#     ### Ticket Data
-#     query_tick = 'SELECT * FROM Ticket'
-#     df_tick = pd.read_sql(query_tick, conn)
-#     df_tick = pd.merge(df_tick, df_cust, how='left', on='customerid')
-#     df_tick['showtime'] = pd.to_datetime(df_tick['showtime'])
-
-#     def extract_week(data):
-#         data = data.isocalendar()[1]
-#         return data
-
-#     df_tick['date'] = df_tick['showtime'].dt.date
-#     df_tick['hour'] = df_tick['showtime'].dt.hour
-#     df_tick['weekinyear'] = df_tick['showtime'].apply(extract_week)
-#     df_tick['dayinweek'] = df_tick['showtime'].dt.day_name()
-
-#     ### Order Data
-#     df_order = df_tick.drop_duplicates(subset=['orderid'])
-
-#     return df_film, df_cust, df_tick, df_order
-
-# df_film, df_cust, df_tick, df_order = load_data_sales()
-
-def import_data():
+@st.cache_data(ttl=86400)
+def load_data_sales():
     ### Film Data
-    df_film = pd.read_csv('https://raw.githubusercontent.com/anhvi02/CinemaProject_DataSquad2024/main/Data/film.csv')
+    query_film = 'SELECT * FROM Film'
+    df_film = pd.read_sql(query_film, conn)
 
     ### Customer Data
-    df_cust = pd.read_csv('https://raw.githubusercontent.com/anhvi02/CinemaProject_DataSquad2024/main/Data/customer.csv')
-    df_cust['DOB'] = pd.to_datetime(df_cust['DOB'])
+    query_cust = 'SELECT * FROM Customer'
+    df_cust = pd.read_sql(query_cust, conn)
+
     def extract_age(birthday):
         today = datetime.datetime.now().year
         age = today - birthday.year
@@ -126,7 +92,8 @@ def import_data():
     df_cust['age'] = df_cust['DOB'].apply(extract_age)
 
     ### Ticket Data
-    df_tick = pd.read_csv('https://raw.githubusercontent.com/anhvi02/CinemaProject_DataSquad2024/main/Data/tick.csv')
+    query_tick = 'SELECT * FROM Ticket'
+    df_tick = pd.read_sql(query_tick, conn)
     df_tick = pd.merge(df_tick, df_cust, how='left', on='customerid')
     df_tick['showtime'] = pd.to_datetime(df_tick['showtime'])
 
@@ -144,9 +111,7 @@ def import_data():
 
     return df_film, df_cust, df_tick, df_order
 
-# IMPORT
-df_film, df_cust, df_tick, df_order = import_data()
-
+df_film, df_cust, df_tick, df_order = load_data_sales()
 
 #### CHART PREPRARING  -------------------------->
 # LINE CHART: sales by day in week
@@ -440,17 +405,17 @@ with sale_db:
 ### Customer Data
 @st.cache_data(ttl=86400)
 def load_data_customer():
-    ### Customer Data
-    df_cust = pd.read_csv('https://raw.githubusercontent.com/anhvi02/CinemaProject_DataSquad2024/main/Data/customer.csv')
-    df_cust['DOB'] = pd.to_datetime(df_cust['DOB'])
+    query_cust = 'SELECT * FROM Customer'
+    df_cust = pd.read_sql(query_cust, conn)
     def extract_age(birthday):
         today = datetime.datetime.now().year
         age = today - birthday.year
         return age
     df_cust['age'] = df_cust['DOB'].apply(extract_age)
 
-    ### Ticket Data
-    df_tick = pd.read_csv('https://raw.githubusercontent.com/anhvi02/CinemaProject_DataSquad2024/main/Data/tick.csv')
+    ### Order data
+    query_tick = 'SELECT * FROM Ticket'
+    df_tick = pd.read_sql(query_tick, conn)
     df_order = df_tick.drop_duplicates(subset=['orderid'])
 
     ### Sale data by customer
