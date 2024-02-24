@@ -4,7 +4,8 @@ Bên cạnh đó, DataSquad còn xây dựng một database với nền tảng A
 Sau cùng, một dashboard được xây dựng với Streamlit để báo cáo kinh doanh.
 
 # WORKFLOW
-![workflow] (workflow.png)
+![Uploading image.png…]()
+
 
 # FILE DESCRIPTION
 1. analysis_cinema.ipynb:
