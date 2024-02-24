@@ -438,7 +438,7 @@ with sale_db:
 ##### CUSTOMER DASHBOARD >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #### DATA PREPARING -------------------------->
 ### Customer Data
-@st.cache_data(ttl=86400)
+# @st.cache_data(ttl=86400)
 def load_data_customer():
     ### Customer Data
     df_cust = pd.read_csv('https://raw.githubusercontent.com/anhvi02/CinemaProject_DataSquad2024/main/Data/customer.csv')
