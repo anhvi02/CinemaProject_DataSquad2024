@@ -3,6 +3,8 @@ Với bộ dữ liệu về một rạp phim được cung cấp bởi ban tổ 
 Bên cạnh đó, DataSquad còn xây dựng một database với nền tảng Azure nhằm lưu trữ dữ liệu cùng với một data pipeline để thực hiện quá trình ETL bao gồm extract dữ liệu từ file spreadsheet, transform dữ liệu và load vào database.  
 Sau cùng, một dashboard được xây dựng với Streamlit để báo cáo kinh doanh.
 
+Link dashboard: ! [Dashboard] [https://dashboardcinema-datasquad2024.streamlit.app/]
+
 # WORKFLOW
 ![Uploading image.png…](https://github.com/anhvi02/CinemaProject_DataSquad2024/blob/main/workflow.png?raw=true)
 
