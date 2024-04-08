@@ -23,7 +23,7 @@ st.set_page_config(layout = 'wide', page_title='Cinema Dashboard', page_icon='ðŸ
 #     </style>
 # """, unsafe_allow_html=True)
 
-color_1 = '#fca311'
+color_1 = '#003566'
 #0466c8
 #0077b6
 #003566: blue
